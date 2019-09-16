@@ -14,9 +14,10 @@ import os, gzip
 
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
+import cv2
 
 def load_mnist(dataset_name):
-    data_dir = os.path.join("./data", dataset_name)
+    data_dir = os.path.join("/Users/kartik/personal", dataset_name)
 
     def extract_data(filename, num_data, head_size, data_size):
         with gzip.open(filename) as bytestream:
@@ -27,6 +28,11 @@ def load_mnist(dataset_name):
 
     data = extract_data(data_dir + '/train-images-idx3-ubyte.gz', 60000, 16, 28 * 28)
     trX = data.reshape((60000, 28, 28, 1))
+
+    #code to save images
+
+    for i in range(10):
+        cv2.imwrite('lol' + str(i) + '.jpg', trX[i])
 
     data = extract_data(data_dir + '/train-labels-idx1-ubyte.gz', 60000, 8, 1)
     trY = data.reshape((60000))

@@ -227,7 +227,7 @@ class VAE(object):
             self.save(self.checkpoint_dir, counter)
 
             # show temporal results
-            self.visualize_results(epoch)
+        # self.visualize_results()
 
         # save model for final step
         self.save(self.checkpoint_dir, counter)
@@ -270,7 +270,7 @@ class VAE(object):
                 cv2.imwrite('orinfer/' + str(j) + '_' + str(i) + '.jpg', ori_sample)
                 cv2.imwrite('input/' + str(j) + '_'  + str(i) + '.jpg', img)
 
-    def visualize_results(self, epoch):
+    def visualize_results(self):
         tot_num_samples = min(self.sample_num, self.batch_size)
         image_frame_dim = int(np.floor(np.sqrt(tot_num_samples)))
 
@@ -283,9 +283,9 @@ class VAE(object):
 
 
 
-        save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
-                    check_folder(
-                        self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_epoch%03d' % epoch + '_test_all_classes.png')
+        # save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
+        #             check_folder(
+        #                 self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_epoch%03d' % epoch + '_test_all_classes.png')
 
         # """ learned manifold """
         # if self.z_dim == 2:
