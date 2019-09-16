@@ -1,0 +1,4 @@
+checkpoint/
+results/
+*.jpg
+*.pyc

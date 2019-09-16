@@ -57,7 +57,10 @@ class VAE(object):
             net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='en_conv2'), is_training=is_training, scope='en_bn2'))
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(linear(net, 1024, scope='en_fc3'), is_training=is_training, scope='en_bn3'))
-            gaussian_params = linear(net, 2 * self.z_dim, scope='en_fc4')
+            net_before_gauss = tf.print('shape of net is ', tf.shape(net))
+            
+            with tf.control_dependencies([net_before_gauss]):
+                gaussian_params = linear(net, 2 * self.z_dim, scope='en_fc4')
 
             # The mean parameter is unconstrained
             mean = gaussian_params[:, :self.z_dim]
@@ -82,6 +85,19 @@ class VAE(object):
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 28, 28, 1], 4, 4, 2, 2, name='de_dc4'))
             return out
 
+    def inference(self): 
+        bs = self.batch_size
+        self.mu = tf.placeholder(tf.float32, [bs, self.z_dim], name='mu')
+        self.sigma = tf.placeholder(tf.float32, [bs, self.z_dim], name='sigma')
+        z = self.mu + self.sigma * tf.random_normal(tf.shape(self.mu), 0, 1, dtype=tf.float32)
+        # z = self.mu 
+        self.images = self.decoder(z, is_training=False, reuse=True)
+        # self.images = self.decoder(z, is_training=False, reuse=True)
+
+
+        
+
+
     def build_model(self):
         # some parameters
         image_dims = [self.input_height, self.input_width, self.c_dim]
@@ -98,11 +114,16 @@ class VAE(object):
         # encoding
         self.mu, sigma = self.encoder(self.inputs, is_training=True, reuse=False)        
 
+        self.sigma = sigma
+
         # sampling by re-parameterization technique
         z = self.mu + sigma * tf.random_normal(tf.shape(self.mu), 0, 1, dtype=tf.float32)
 
+        z_shape = tf.print('shape of z is ', tf.shape(z))
+
         # decoding
-        out = self.decoder(z, is_training=True, reuse=False)
+        with tf.control_dependencies([z_shape]):
+            out = self.decoder(z, is_training=True, reuse=False)
         self.out = tf.clip_by_value(out, 1e-8, 1 - 1e-8)
 
         # loss
@@ -127,6 +148,10 @@ class VAE(object):
         """" Testing """
         # for test
         self.fake_images = self.decoder(self.z, is_training=False, reuse=True)
+
+        # self.images = self.decoder(z, is_training=False, reuse=True)
+
+        #
 
         """ Summary """
         nll_sum = tf.summary.scalar("nll", self.neg_loglikelihood)
@@ -207,6 +232,44 @@ class VAE(object):
         # save model for final step
         self.save(self.checkpoint_dir, counter)
 
+    def feature_analysis(self, mu, sigma, batch_images):
+        # samples = self.sess.run(self.images , feed_dict={self.mu: mu, self.sigma: sigma})
+
+        mu_max = np.max(mu)
+
+        mu_min = np.min(mu)
+
+        for j in range(np.shape(mu)[1]):
+
+            original_samples = self.sess.run(self.images , feed_dict={self.mu: mu, self.sigma: sigma})
+
+            indexes_to_keep = [ a for a in list(range(j)) ]
+
+            # mu_ = mu[:, indexes_to_keep]
+
+            # mu_feat = mu[0, :]
+
+            mu_ = np.copy(mu)
+
+            
+
+            mu_[:, :] = 0
+
+            mu_[:, indexes_to_keep] = mu[:, indexes_to_keep] 
+            # mu_[:, j+1] = mu_min
+
+            samples = self.sess.run(self.images , feed_dict={self.mu: mu_, self.sigma: sigma})
+
+        # samples = self.sess.run(self.images, feed_dict={self.z: z})
+
+            for i in range(len(samples)):
+                sample = samples[i]*255
+                ori_sample = original_samples[i]*255
+                img = batch_images[i]*255
+                cv2.imwrite('infer/' + str(j) + '_' + str(i) + '.jpg', sample)
+                cv2.imwrite('orinfer/' + str(j) + '_' + str(i) + '.jpg', ori_sample)
+                cv2.imwrite('input/' + str(j) + '_'  + str(i) + '.jpg', img)
+
     def visualize_results(self, epoch):
         tot_num_samples = min(self.sample_num, self.batch_size)
         image_frame_dim = int(np.floor(np.sqrt(tot_num_samples)))
@@ -214,36 +277,64 @@ class VAE(object):
         """ random condition, random noise """
 
         z_sample = prior.gaussian(self.batch_size, self.z_dim)
+    
 
         samples = self.sess.run(self.fake_images, feed_dict={self.z: z_sample})
+
+
 
         save_images(samples[:image_frame_dim * image_frame_dim, :, :, :], [image_frame_dim, image_frame_dim],
                     check_folder(
                         self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_epoch%03d' % epoch + '_test_all_classes.png')
 
-        """ learned manifold """
-        if self.z_dim == 2:
-            assert self.z_dim == 2
+        # """ learned manifold """
+        # if self.z_dim == 2:
+        #     assert self.z_dim == 2
 
-            z_tot = None
-            id_tot = None
-            for idx in range(0, 100):
-                #randomly sampling
-                id = np.random.randint(0,self.num_batches)
-                batch_images = self.data_X[id * self.batch_size:(id + 1) * self.batch_size]
-                batch_labels = self.data_y[id * self.batch_size:(id + 1) * self.batch_size]
+        z_tot = None
+        id_tot = None
 
-                z = self.sess.run(self.mu, feed_dict={self.inputs: batch_images})
+        # for idx in range(0, 100):
+            #randomly sampling
+        id = np.random.randint(0,self.num_batches)
+        batch_images = self.data_X[id * self.batch_size:(id + 1) * self.batch_size]
+        batch_labels = self.data_y[id * self.batch_size:(id + 1) * self.batch_size]
 
-                if idx == 0:
-                    z_tot = z
-                    id_tot = batch_labels
-                else:
-                    z_tot = np.concatenate((z_tot, z), axis=0)
-                    id_tot = np.concatenate((id_tot, batch_labels), axis=0)
+        mu, sigma = self.sess.run([self.mu, self.sigma], feed_dict={self.inputs: batch_images})
 
-            save_scattered_image(z_tot, id_tot, -4, 4, name=check_folder(
-                self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_epoch%03d' % epoch + '_learned_manifold.png')
+        # tf.reset_default_graph()
+
+        self.inference()
+
+        self.feature_analysis( mu, sigma, batch_images)
+
+
+        # samples = self.sess.run(self.images , feed_dict={self.mu: mu, self.sigma: sigma})
+
+
+
+        # # samples = self.sess.run(self.images, feed_dict={self.z: z})
+
+        # for i in range(len(samples)):
+        #     sample = samples[i]*255
+        #     img = batch_images[i]*255
+        #     cv2.imwrite('infer/' + str(i) + '.jpg', sample)
+        #     cv2.imwrite('input/' + str(i) + '.jpg', img)
+
+
+        # images = self.sess.run
+
+        # learned_images = self.decoder 
+
+        # if idx == 0:
+        #     z_tot = z
+        #     id_tot = batch_labels
+        # else:
+        #     z_tot = np.concatenate((z_tot, z), axis=0)
+        #     id_tot = np.concatenate((id_tot, batch_labels), axis=0)
+
+        # save_scattered_image(z_tot, id_tot, -4, 4, name=check_folder(
+        #     self.result_dir + '/' + self.model_dir) + '/' + self.model_name + '_epoch%03d' % epoch + '_learned_manifold.png')
 
     @property
     def model_dir(self):
