@@ -22,7 +22,7 @@ class VAE(object):
         self.epoch = epoch
         self.batch_size = batch_size
 
-        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist':
+        if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name =='documents':
             # parameters
             self.input_height = 28
             self.input_width = 28
@@ -40,7 +40,13 @@ class VAE(object):
             self.sample_num = 64  # number of generated images to be saved
 
             # load mnist
-            self.data_X, self.data_y = load_mnist(self.dataset_name)
+            if dataset_name != 'documents':
+                self.data_X, self.data_y = load_mnist(self.dataset_name)
+            else:
+                self.c_dim = 3
+                self.data_X, self.data_y = load_docs(self.dataset_name)
+
+
 
             # get number of batches for a single epoch
             self.num_batches = len(self.data_X) // self.batch_size
@@ -89,8 +95,8 @@ class VAE(object):
         bs = self.batch_size
         self.mu = tf.placeholder(tf.float32, [bs, self.z_dim], name='mu')
         self.sigma = tf.placeholder(tf.float32, [bs, self.z_dim], name='sigma')
-        z = self.mu + self.sigma * tf.random_normal(tf.shape(self.mu), 0, 1, dtype=tf.float32)
-        # z = self.mu 
+        # z = self.mu + self.sigma * tf.random_normal(tf.shape(self.mu), 0, 1, dtype=tf.float32)
+        z = self.mu 
         self.images = self.decoder(z, is_training=False, reuse=True)
         # self.images = self.decoder(z, is_training=False, reuse=True)
 
@@ -297,6 +303,7 @@ class VAE(object):
         # for idx in range(0, 100):
             #randomly sampling
         id = np.random.randint(0,self.num_batches)
+        id = 100
         batch_images = self.data_X[id * self.batch_size:(id + 1) * self.batch_size]
         batch_labels = self.data_y[id * self.batch_size:(id + 1) * self.batch_size]
 

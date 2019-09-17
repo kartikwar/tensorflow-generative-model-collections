@@ -15,6 +15,7 @@ import os, gzip
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 import cv2
+import os
 
 def load_mnist(dataset_name):
     data_dir = os.path.join("/Users/kartik/personal", dataset_name)
@@ -60,6 +61,23 @@ def load_mnist(dataset_name):
         y_vec[i, y[i]] = 1.0
 
     return X / 255., y_vec
+
+
+def load_docs(dataset_name):
+    data_dir = "/Users/kartik/Documents/ami_invoices_jpg/all"
+
+    X = np.zeros(shape=(7231, 28, 28, 3))
+    y = np.zeros(shape=(7231,))
+
+    img_index = 0
+
+    for img_name in os.listdir(data_dir):
+        img = cv2.imread(os.path.join(data_dir, img_name))
+        img = cv2.resize(img, (28, 28))
+        X[img_index] = img 
+        img_index += 1
+
+    return X/255., y
 
 def check_folder(log_dir):
     if not os.path.exists(log_dir):
