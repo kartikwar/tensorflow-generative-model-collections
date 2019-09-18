@@ -10,6 +10,8 @@ from utils import *
 
 import prior_factory as prior
 
+import json
+
 class VAE(object):
     model_name = "VAE"     # name for checkpoint
 
@@ -103,10 +105,6 @@ class VAE(object):
         z = self.mu 
         self.images = self.decoder(z, is_training=False, reuse=True)
         # self.images = self.decoder(z, is_training=False, reuse=True)
-
-
-        
-
 
     def build_model(self):
         # some parameters
@@ -244,6 +242,7 @@ class VAE(object):
 
     def feature_analysis(self, mu, sigma, batch_images):
         # samples = self.sess.run(self.images , feed_dict={self.mu: mu, self.sigma: sigma})
+        image_vectors = {}
 
         mu_max = np.max(mu)
 
@@ -279,6 +278,13 @@ class VAE(object):
                 cv2.imwrite('infer/' + str(j) + '_' + str(i) + '.jpg', sample)
                 cv2.imwrite('orinfer/' + str(j) + '_' + str(i) + '.jpg', ori_sample)
                 cv2.imwrite('input/' + str(j) + '_'  + str(i) + '.jpg', img)
+                x  = np.copy(mu)
+                x = x.tolist()
+                image_vectors[str(j) + '_' + str(i)] = x[i]
+        
+
+        with open('template_vectors.json', 'w') as tv:
+            json.dump(image_vectors, tv)
 
     def visualize_results(self):
         tot_num_samples = min(self.sample_num, self.batch_size)
