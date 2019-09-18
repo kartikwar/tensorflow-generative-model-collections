@@ -43,6 +43,10 @@ class VAE(object):
             if dataset_name != 'documents':
                 self.data_X, self.data_y = load_mnist(self.dataset_name)
             else:
+                self.input_height = 224
+                self.input_width = 224
+                self.output_height = 224
+                self.output_width = 224
                 self.c_dim = 3
                 self.data_X, self.data_y = load_docs(self.dataset_name)
 
@@ -82,13 +86,13 @@ class VAE(object):
         # Architecture : FC1024_BR-FC7x7x128_BR-(64)4dc2s_BR-(1)4dc2s_S
         with tf.variable_scope("decoder", reuse=reuse):
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * 7 * 7, scope='de_fc2'), is_training=is_training, scope='de_bn2'))
-            net = tf.reshape(net, [self.batch_size, 7, 7, 128])
+            net = tf.nn.relu(bn(linear(net, 128 * int(self.output_height/4) * int(self.output_height/4), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
+            net = tf.reshape(net, [self.batch_size, int(self.output_height/4), int(self.output_width/4), 128])
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, 14, 14, 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, int(self.output_height/2), int(self.output_width/2), 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
 
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, 28, 28, 1], 4, 4, 2, 2, name='de_dc4'))
+            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))
             return out
 
     def inference(self): 

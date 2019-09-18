@@ -64,16 +64,18 @@ def load_mnist(dataset_name):
 
 
 def load_docs(dataset_name):
-    data_dir = "/Users/kartik/Documents/ami_invoices_jpg/all"
+    data_dir = "/Users/kartik/Documents/ami_invoices_jpg/"
 
-    X = np.zeros(shape=(7231, 28, 28, 3))
+    X = np.zeros(shape=(7231, 224, 224, 3))
     y = np.zeros(shape=(7231,))
 
     img_index = 0
 
-    for img_name in os.listdir(data_dir):
+    all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img]
+
+    for img_name in all_docs:
         img = cv2.imread(os.path.join(data_dir, img_name))
-        img = cv2.resize(img, (28, 28))
+        # img = cv2.resize(img, (28, 28))
         X[img_index] = img 
         img_index += 1
 
