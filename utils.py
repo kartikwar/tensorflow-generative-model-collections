@@ -62,6 +62,24 @@ def load_mnist(dataset_name):
 
     return X / 255., y_vec
 
+def get_ops(path):
+    tf.reset_default_graph()
+    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+    new_saver = tf.train.import_meta_graph(path+'.ckpt.meta')
+    new_saver.restore(sess, save_path=path+'.ckpt')
+
+    # opt = [n.name for n in tf.get_default_graph().as_graph_def().node]
+
+
+    op_dict = {
+        "input": tf.get_collection('input')[0],
+        "z" : tf.get_collection('z')[0],
+        "mu" : tf.get_collection('mu')[0],
+        "sigma" : tf.get_collection('sigma')[0]    
+    }
+
+    return sess, op_dict
+
 
 def load_docs(dataset_name):
     data_dir = "/Users/kartik/Documents/ami_invoices_jpg/"
@@ -75,7 +93,7 @@ def load_docs(dataset_name):
 
     for img_name in all_docs:
         img = cv2.imread(os.path.join(data_dir, img_name))
-        # img = cv2.resize(img, (28, 28))
+        img = cv2.resize(img, (224, 224))
         X[img_index] = img 
         img_index += 1
 

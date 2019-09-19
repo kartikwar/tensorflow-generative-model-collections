@@ -115,12 +115,20 @@ class VAE(object):
         # images
         self.inputs = tf.placeholder(tf.float32, [bs] + image_dims, name='real_images')
 
+        tf.add_to_collection("input", self.inputs)
+
         # noises
         self.z = tf.placeholder(tf.float32, [bs, self.z_dim], name='z')
 
+        tf.add_to_collection("z", self.z)
+
         """ Loss Function """
         # encoding
-        self.mu, sigma = self.encoder(self.inputs, is_training=True, reuse=False)        
+        self.mu, sigma = self.encoder(self.inputs, is_training=True, reuse=False)
+
+        tf.add_to_collection("mu", self.mu)
+        
+        tf.add_to_collection("sigma", sigma)        
 
         self.sigma = sigma
 

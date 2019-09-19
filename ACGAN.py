@@ -103,6 +103,8 @@ class ACGAN(object):
         """ Graph Input """
         # images
         self.inputs = tf.placeholder(tf.float32, [bs] + image_dims, name='real_images')
+        
+        tf.add_to_collection("input", self.inputs)
 
         # labels
         self.y = tf.placeholder(tf.float32, [bs, self.y_dim], name='y')
