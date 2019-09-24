@@ -3,30 +3,39 @@ from utils import *
 import os
 import json
 import numpy as np
+import math
 
 def get_encoded_vectors(sess, op_dict, folder_path):
 
     encoded_vectors = {}
 
-    X = np.zeros(shape=(64, 224, 224, 3))
-    y = np.zeros(shape=(64,))
+    all_docs = [doc_img for doc_img in os.listdir(folder_path) if '.DS_Store' not in doc_img]
 
-    img_index = 0
+    iterations = int(math.ceil(len(all_docs) / 64.0))
 
-    all_docs = [doc_img for doc_img in os.listdir(folder_path) if '.DS_Store' not in doc_img][:64]
+    for iteration in range(iterations):
 
-    for img_name in all_docs:
-        img = cv2.imread(os.path.join(folder_path, img_name))
-        img = cv2.resize(img, (224, 224))
-        X[img_index] = img 
-        img_index += 1
+        docs = all_docs[iteration * 64 : (iteration + 1) * 64] 
 
-    mu, sigma = sess.run([op_dict['mu'], op_dict['sigma']], feed_dict={op_dict['input']: X})
+        X = np.zeros(shape=(64, 224, 224, 3))
+        y = np.zeros(shape=(64,))
 
-    for index in range(64):
-        im_name = all_docs[index]
-        mu_ = mu[index]
-        encoded_vectors[im_name] = mu_.tolist()
+        img_index = 0
+
+    
+
+        for img_name in docs:
+            img = cv2.imread(os.path.join(folder_path, img_name))
+            img = cv2.resize(img, (224, 224))
+            X[img_index] = img 
+            img_index += 1
+
+        mu, sigma = sess.run([op_dict['mu'], op_dict['sigma']], feed_dict={op_dict['input']: X})
+
+        for index in range(len(docs)):
+            im_name = docs[index]
+            mu_ = mu[index]
+            encoded_vectors[im_name] = mu_.tolist()
 
     return encoded_vectors
 
@@ -43,9 +52,9 @@ def debug():
     # dist1 = calculate_distance(vectors["7_35"], vectors["7_42"])
     dist2 = calculate_distance(vectors["020513314_1812.pdf0.jpg"], vectors["020513314_1812.pdf2.jpg"])
     dist3 = calculate_distance(vectors["032147968_1901.pdf0.jpg"], vectors["032147799_1905.pdf0.jpg"])
-    # dist4 = calculate_distance(vectors["0_3"], vectors["0_4"])
-    # dist5 = calculate_distance(vectors["0_9"], vectors["0_4"])
-    # dist6 = calculate_distance(vectors["0_29"], vectors["0_10"])
+    dist4 = calculate_distance(vectors["pdf_page-0002.jpg"], vectors["pdf_page-0003.jpg"])
+    dist5 = calculate_distance(vectors["sample_page-0001.jpg"], vectors["sample_page-0002.jpg"])
+    dist6 = calculate_distance(vectors["sample_page-0001.jpg"], vectors["pdf_page-0003.jpg"])
     pass
 
 def run_inference():

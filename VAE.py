@@ -15,7 +15,8 @@ import json
 class VAE(object):
     model_name = "VAE"     # name for checkpoint
 
-    def __init__(self, sess, epoch, batch_size, z_dim, dataset_name, checkpoint_dir, result_dir, log_dir):
+    def __init__(self, sess, epoch, batch_size, z_dim, dataset_name, checkpoint_dir, 
+    result_dir, log_dir, input_height=28):
         self.sess = sess
         self.dataset_name = dataset_name
         self.checkpoint_dir = checkpoint_dir
@@ -23,13 +24,14 @@ class VAE(object):
         self.log_dir = log_dir
         self.epoch = epoch
         self.batch_size = batch_size
+        self.input_height = input_height
+        self.input_width = input_height
+        self.output_height = input_height
+        self.output_width = input_height
 
         if dataset_name == 'mnist' or dataset_name == 'fashion-mnist' or dataset_name =='documents':
             # parameters
-            self.input_height = 28
-            self.input_width = 28
-            self.output_height = 28
-            self.output_width = 28
+
 
             self.z_dim = z_dim         # dimension of noise-vector
             self.c_dim = 1
@@ -45,12 +47,8 @@ class VAE(object):
             if dataset_name != 'documents':
                 self.data_X, self.data_y = load_mnist(self.dataset_name)
             else:
-                self.input_height = 224
-                self.input_width = 224
-                self.output_height = 224
-                self.output_width = 224
                 self.c_dim = 3
-                self.data_X, self.data_y = load_docs(self.dataset_name)
+                self.data_X, self.data_y = load_docs(self.dataset_name, self.input_height)
 
 
 
@@ -363,9 +361,9 @@ class VAE(object):
 
     @property
     def model_dir(self):
-        return "{}_{}_{}_{}".format(
+        return "{}_{}_{}_{}_{}".format(
             self.model_name, self.dataset_name,
-            self.batch_size, self.z_dim)
+            self.batch_size, self.z_dim, self.input_height)
 
     def save(self, checkpoint_dir, step):
         checkpoint_dir = os.path.join(checkpoint_dir, self.model_dir, self.model_name)

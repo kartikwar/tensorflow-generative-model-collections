@@ -17,7 +17,16 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["--gan_type", "VAE", "--dataset", "documents", "--batch_size", "64", "--epoch", "1", "--z_dim" , "8"]
+            "args": ["--gan_type", "VAE", "--dataset", "documents", "--batch_size", "64", "--epoch", "1", 
+                "--z_dim" , "16", "--input_height", "28"]
+        },
+        {
+            "name": "Inference",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["--input_height", "448"]
         }
     ]
 }

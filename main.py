@@ -41,6 +41,7 @@ def parse_args():
                         help='Directory name to save the generated images')
     parser.add_argument('--log_dir', type=str, default='logs',
                         help='Directory name to save training logs')
+    parser.add_argument('--input_height', type=int, default=28, help='height of the input image')
 
     return check_args(parser.parse_args())
 
@@ -63,6 +64,8 @@ def check_args(args):
 
     # --z_dim
     assert args.z_dim >= 1, 'dimension of noise vector must be larger than or equal to one'
+
+    assert args.input_height >=28, 'input height must be greater then 24'
 
     return args
 
@@ -89,7 +92,8 @@ def main():
                             dataset_name=args.dataset,
                             checkpoint_dir=args.checkpoint_dir,
                             result_dir=args.result_dir,
-                            log_dir=args.log_dir)
+                            log_dir=args.log_dir,
+                            input_height= args.input_height)
         if gan is None:
             raise Exception("[!] There is no option for " + args.gan_type)
 
