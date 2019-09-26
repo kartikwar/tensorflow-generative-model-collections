@@ -194,7 +194,7 @@ class ACGAN(object):
         self.saver = tf.train.Saver()
 
         # summary writer
-        self.writer = tf.summary.FileWriter(self.log_dir + '/' + self.model_name, self.sess.graph)
+        # self.writer = tf.summary.FileWriter(self.log_dir + '/' + self.model_name, self.sess.graph)
 
         # restore check-point if it exits
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
@@ -224,14 +224,14 @@ class ACGAN(object):
                 _, summary_str, d_loss = self.sess.run([self.d_optim, self.d_sum, self.d_loss],
                                                        feed_dict={self.inputs: batch_images, self.y: batch_codes,
                                                                   self.z: batch_z})
-                self.writer.add_summary(summary_str, counter)
+                # self.writer.add_summary(summary_str, counter)
 
                 # update G & Q network
                 _, summary_str_g, g_loss, _, summary_str_q, q_loss = self.sess.run(
                     [self.g_optim, self.g_sum, self.g_loss, self.q_optim, self.q_sum, self.q_loss],
                     feed_dict={self.z: batch_z, self.y: batch_codes, self.inputs: batch_images})
-                self.writer.add_summary(summary_str_g, counter)
-                self.writer.add_summary(summary_str_q, counter)
+                # self.writer.add_summary(summary_str_g, counter)
+                # self.writer.add_summary(summary_str_q, counter)
 
                 # display training status
                 counter += 1
