@@ -156,8 +156,11 @@ class VAE(object):
         # optimizers
         t_vars = tf.trainable_variables()
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.optim = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1) \
-                      .minimize(self.loss, var_list=t_vars)
+            optimizer = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1)
+            gradients = optimizer.compute_gradients(self.loss, var_list=t_vars, aggregation_method=2)
+            apply_gradients = optimizer.apply_gradients(gradients)
+            # self.optim = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1) \
+            #           .minimize(self.loss, var_list=t_vars)
 
         """" Testing """
         # for test
