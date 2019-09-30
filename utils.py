@@ -82,16 +82,17 @@ def get_ops(path):
 
 
 def load_docs(dataset_name, input_height):
-    data_dir = "/home/idpuser/idp/ami_invoices_jpg"
+    data_dir = "/home/developers/idp/ami_invoices_448/"
 
     X = np.zeros(shape=(7231, input_height, input_height, 3))
     y = np.zeros(shape=(7231,))
 
     img_index = 0
 
-    all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img]
+    all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
 
     for img_name in all_docs:
+        print('img_name is ', img_name)
         img = cv2.imread(os.path.join(data_dir, img_name))
         img = cv2.resize(img, (input_height, input_height))
         X[img_index] = img 
