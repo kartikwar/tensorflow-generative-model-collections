@@ -84,8 +84,8 @@ def get_ops(path):
 def load_docs(dataset_name, input_height):
     data_dir = "/home/developers/idp/ami_invoices_448/"
 
-    X = np.zeros(shape=(64, input_height, input_height, 3))
-    y = np.zeros(shape=(64,))
+    X = np.zeros(shape=(7231, input_height, input_height, 3))
+    y = np.zeros(shape=(7231,))
 
     img_index = 0
 

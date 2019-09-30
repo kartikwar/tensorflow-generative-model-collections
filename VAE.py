@@ -100,7 +100,7 @@ class VAE(object):
                 bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, 3, 3, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
             #height
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 6, 6, name='de_dc4'))
+            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))
             return out
 
     def inference(self): 
