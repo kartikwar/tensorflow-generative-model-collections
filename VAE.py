@@ -99,8 +99,8 @@ class VAE(object):
             net = tf.nn.relu(
                 bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, 3, 3, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
-
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))
+            #height
+            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 6, 6, name='de_dc4'))
             return out
 
     def inference(self): 
@@ -166,7 +166,7 @@ class VAE(object):
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
             optimizer = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1)
             gradients = optimizer.compute_gradients(self.loss, var_list=t_vars, aggregation_method=2)
-            apply_gradients = optimizer.apply_gradients(gradients)
+            self.optim = optimizer.apply_gradients(gradients)
             # self.optim = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1) \
             #           .minimize(self.loss, var_list=t_vars)
 

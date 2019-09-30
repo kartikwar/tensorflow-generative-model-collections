@@ -18,7 +18,7 @@ import cv2
 import os
 
 def load_mnist(dataset_name):
-    data_dir = os.path.join("/Users/kartik/personal", dataset_name)
+    data_dir = os.path.join("~/idp/ami_invoices_jpg/", dataset_name)
 
     def extract_data(filename, num_data, head_size, data_size):
         with gzip.open(filename) as bytestream:
@@ -82,16 +82,21 @@ def get_ops(path):
 
 
 def load_docs(dataset_name, input_height):
-    data_dir = "/Users/kartik/Documents/ami_invoices_448/"
+    data_dir = "/home/developers/idp/ami_invoices_448/"
 
     X = np.zeros(shape=(64, input_height, input_height, 3))
     y = np.zeros(shape=(64,))
 
     img_index = 0
 
+<<<<<<< HEAD
     all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img][:64]
+=======
+    all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
+>>>>>>> gpu
 
     for img_name in all_docs:
+        print('img_name is ', img_name)
         img = cv2.imread(os.path.join(data_dir, img_name))
         img = cv2.resize(img, (input_height, input_height))
         X[img_index] = img 
