@@ -89,11 +89,7 @@ def load_docs(dataset_name, input_height):
 
     img_index = 0
 
-<<<<<<< HEAD
-    all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img][:64]
-=======
     all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
->>>>>>> gpu
 
     for img_name in all_docs:
         print('img_name is ', img_name)
