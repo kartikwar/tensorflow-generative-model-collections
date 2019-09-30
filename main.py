@@ -1,5 +1,5 @@
 import os
-
+# os.environ['CUDA_VISIBLE_DEVICES']='1'
 ## GAN Variants
 from GAN import GAN
 from CGAN import CGAN
@@ -79,7 +79,11 @@ def main():
     # open session
     models = [GAN, CGAN, infoGAN, ACGAN, EBGAN, WGAN, WGAN_GP, DRAGAN,
               LSGAN, BEGAN, VAE, CVAE]
-    with tf.Session(config=tf.ConfigProto(allow_soft_placement=True)) as sess:
+    config = tf.ConfigProto(allow_soft_placement=True)
+    config.gpu_options.allow_growth = True
+    #config.gpu_options.per_process_gpu_memory_fraction = 0.10    
+    
+    with tf.Session(config=config) as sess:
         # declare instance for GAN
 
         gan = None
