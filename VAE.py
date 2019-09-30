@@ -63,8 +63,12 @@ class VAE(object):
         # Architecture : (64)4c2s-(128)4c2s_BL-FC1024_BL-FC62*4
         with tf.variable_scope("encoder", reuse=reuse):
 
+            #height/2
             net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='en_conv1'))
-            net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='en_conv2'), is_training=is_training, scope='en_bn2'))
+            tf.add_to_collection("encoder_conv1", net)
+            #height/6
+            net = lrelu(bn(conv2d(net, 128, 4, 4, 3, 3, name='en_conv2'), is_training=is_training, scope='en_bn2'))
+            tf.add_to_collection("encoder_conv2", net)
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(linear(net, 1024, scope='en_fc3'), is_training=is_training, scope='en_bn3'))
             net_before_gauss = tf.print('shape of net is ', tf.shape(net))
@@ -85,11 +89,15 @@ class VAE(object):
         # Network Architecture is exactly same as in infoGAN (https://arxiv.org/abs/1606.03657)
         # Architecture : FC1024_BR-FC7x7x128_BR-(64)4dc2s_BR-(1)4dc2s_S
         with tf.variable_scope("decoder", reuse=reuse):
+            deconv1_shape = tf.get_collection('encoder_conv2')[0]
+            deconv1_shape = deconv1_shape.get_shape().as_list()
+            deconv2_shape = tf.get_collection('encoder_conv1')[0]
+            deconv2_shape = deconv2_shape.get_shape().as_list()
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * int(self.output_height/4) * int(self.output_height/4), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
-            net = tf.reshape(net, [self.batch_size, int(self.output_height/4), int(self.output_width/4), 128])
+            net = tf.nn.relu(bn(linear(net, 128 * int(deconv1_shape[1]) * int(deconv1_shape[2]), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
+            net = tf.reshape(net, [self.batch_size, int(deconv1_shape[1]), int(deconv1_shape[2]), 128])
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, int(self.output_height/2), int(self.output_width/2), 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, 3, 3, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
 
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))

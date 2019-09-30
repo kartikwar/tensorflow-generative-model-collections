@@ -84,12 +84,12 @@ def get_ops(path):
 def load_docs(dataset_name, input_height):
     data_dir = "/Users/kartik/Documents/ami_invoices_448/"
 
-    X = np.zeros(shape=(7231, input_height, input_height, 3))
-    y = np.zeros(shape=(7231,))
+    X = np.zeros(shape=(64, input_height, input_height, 3))
+    y = np.zeros(shape=(64,))
 
     img_index = 0
 
-    all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img]
+    all_docs = [doc_img for doc_img in os.listdir(data_dir) if '.DS_Store' not in doc_img][:64]
 
     for img_name in all_docs:
         img = cv2.imread(os.path.join(data_dir, img_name))
