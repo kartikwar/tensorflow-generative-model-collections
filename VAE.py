@@ -63,8 +63,10 @@ class VAE(object):
         # Architecture : (64)4c2s-(128)4c2s_BL-FC1024_BL-FC62*4
         with tf.variable_scope("encoder", reuse=reuse):
 
+            #height/2
             net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='en_conv1'))
-            net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='en_conv2'), is_training=is_training, scope='en_bn2'))
+            #height/8
+            net = lrelu(bn(conv2d(net, 128, 4, 4, 4, 4, name='en_conv2'), is_training=is_training, scope='en_bn2'))
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(linear(net, 1024, scope='en_fc3'), is_training=is_training, scope='en_bn3'))
             net_before_gauss = tf.print('shape of net is ', tf.shape(net))
@@ -86,12 +88,15 @@ class VAE(object):
         # Architecture : FC1024_BR-FC7x7x128_BR-(64)4dc2s_BR-(1)4dc2s_S
         with tf.variable_scope("decoder", reuse=reuse):
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
-            net = tf.nn.relu(bn(linear(net, 128 * int(self.output_height/4) * int(self.output_height/4), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
-            net = tf.reshape(net, [self.batch_size, int(self.output_height/4), int(self.output_width/4), 128])
+            #height/8
+            net = tf.nn.relu(bn(linear(net, 128 * int(self.output_height/8) * int(self.output_height/8), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
+            #height/8
+            net = tf.reshape(net, [self.batch_size, int(self.output_height/8), int(self.output_width/8), 128])
+            #height/2
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, int(self.output_height/2), int(self.output_width/2), 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, int(self.output_height/2), int(self.output_width/2), 64], 4, 4, 4, 4, name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
-
+            #height
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))
             return out
 
@@ -158,7 +163,7 @@ class VAE(object):
         with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
             optimizer = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1)
             gradients = optimizer.compute_gradients(self.loss, var_list=t_vars, aggregation_method=2)
-            apply_gradients = optimizer.apply_gradients(gradients)
+            self.optim = optimizer.apply_gradients(gradients)
             # self.optim = tf.train.AdamOptimizer(self.learning_rate*5, beta1=self.beta1) \
             #           .minimize(self.loss, var_list=t_vars)
 
