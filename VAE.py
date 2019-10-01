@@ -66,9 +66,11 @@ class VAE(object):
             #height/2
             net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='en_conv1'))
             tf.add_to_collection("encoder_conv1", net)
+            tf.add_to_collection("encoder_strides1", [2, 2])
             #height/6
             net = lrelu(bn(conv2d(net, 128, 4, 4, 3, 3, name='en_conv2'), is_training=is_training, scope='en_bn2'))
             tf.add_to_collection("encoder_conv2", net)
+            tf.add_to_collection("encoder_strides2", [3, 3])
             net = tf.reshape(net, [self.batch_size, -1])
             net = lrelu(bn(linear(net, 1024, scope='en_fc3'), is_training=is_training, scope='en_bn3'))
             net_before_gauss = tf.print('shape of net is ', tf.shape(net))
@@ -91,20 +93,13 @@ class VAE(object):
         with tf.variable_scope("decoder", reuse=reuse):
             deconv1_shape = tf.get_collection('encoder_conv2')[0]
             deconv1_shape = deconv1_shape.get_shape().as_list()
+
+            deconv1_strides = tf.get_collection('encoder_strides2')[0]
+            deconv2_strides = tf.get_collection('encoder_strides1')[0]
+
             deconv2_shape = tf.get_collection('encoder_conv1')[0]
             deconv2_shape = deconv2_shape.get_shape().as_list()
 
-            # #last convolution
-            # net = tf.nn.relu(bn(linear(net, 128 * int(self.output_height/4) * int(self.output_height/4), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
-            # #last convolution
-            # net = tf.reshape(net, [self.batch_size, int(self.output_height/4), int(self.output_width/4), 128])
-            # #first convolution
-            # net = tf.nn.relu(
-            #     bn(deconv2d(net, [self.batch_size, int(self.output_height/2), int(self.output_width/2), 64], 4, 4, 2, 2, name='de_dc3'), is_training=is_training,
-            #        scope='de_bn3'))
-            # #original image
-            # out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 2, 2, name='de_dc4'))
-            # return out
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
             net = tf.nn.relu(bn(linear(net, 128 * int(deconv1_shape[1]) * int(deconv1_shape[2]), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
@@ -112,10 +107,12 @@ class VAE(object):
             net = tf.reshape(net, [self.batch_size, int(deconv1_shape[1]), int(deconv1_shape[2]), 128])
             #height/2
             net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, 3, 3, name='de_dc3'), is_training=is_training,
+                bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, deconv1_strides[0], 
+                deconv1_strides[1], name='de_dc3'), is_training=is_training,
                    scope='de_bn3'))
             #height
-            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 6, 6, name='de_dc4'))
+            out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 
+            deconv2_strides[0], deconv2_strides[1], name='de_dc4'))
             return out
 
     def inference(self): 

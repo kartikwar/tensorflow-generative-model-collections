@@ -52,7 +52,7 @@ def deconv2d(input_, output_shape, k_h=5, k_w=5, d_h=2, d_w=2, name="deconv2d", 
                             initializer=tf.random_normal_initializer(stddev=stddev))
 
         try:
-            deconv = tf.nn.conv2d_transpose(input_, w, output_shape=output_shape, strides=[1, d_h, d_w, 1], padding='VALID')
+            deconv = tf.nn.conv2d_transpose(input_, w, output_shape=output_shape, strides=[1, d_h, d_w, 1])
 
         # Support for verisons of TensorFlow before 0.7.0
         except AttributeError:
