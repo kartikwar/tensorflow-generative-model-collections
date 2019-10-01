@@ -82,7 +82,7 @@ def get_ops(path):
 
 
 def load_docs(dataset_name, input_height):
-    data_dir = "/Users/kartik/Documents/ami_invoices_448/"
+    data_dir = "/home/idpuser/idp/ami_invoices_jpg"
 
     X = np.zeros(shape=(7231, input_height, input_height, 3))
     y = np.zeros(shape=(7231,))
