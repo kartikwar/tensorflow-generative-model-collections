@@ -84,8 +84,8 @@ def get_ops(path):
 def load_docs(dataset_name, input_height):
     data_dir = "/Users/kartik/Documents/ami_invoices_448/"
 
-    X = np.zeros(shape=(64, input_height, input_height, 3))
-    y = np.zeros(shape=(64,))
+    X = np.zeros(shape=(7231, input_height, input_height, 3))
+    y = np.zeros(shape=(7231,))
 
     img_index = 0
 
@@ -99,6 +99,26 @@ def load_docs(dataset_name, input_height):
         img_index += 1
 
     return X/255., y
+
+def load_batch(dataset_name, input_height, start_index, end_index):
+    data_dir = "/Users/kartik/Documents/ami_invoices_448/"
+
+    X = np.zeros(shape=(64, input_height, input_height, 3))
+    y = np.zeros(shape=(64,))
+
+    img_index = 0
+
+    all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
+
+    for img_name in all_docs[start_index:end_index]:
+        print('img_name is ', img_name)
+        img = cv2.imread(os.path.join(data_dir, img_name))
+        img = cv2.resize(img, (input_height, input_height))
+        X[img_index] = img 
+        img_index += 1
+
+    return X/255.
+
 
 def check_folder(log_dir):
     if not os.path.exists(log_dir):

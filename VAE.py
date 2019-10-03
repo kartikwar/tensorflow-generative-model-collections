@@ -231,7 +231,8 @@ class VAE(object):
 
             # get batch data
             for idx in range(start_batch_id, self.num_batches):
-                batch_images = self.data_X[idx*self.batch_size:(idx+1)*self.batch_size]
+                batch_images = load_batch(self.dataset_name, self.input_height, idx*self.batch_size, (idx+1)*self.batch_size)
+                # batch_images = self.data_X[idx*self.batch_size:(idx+1)*self.batch_size]
                 batch_z = prior.gaussian(self.batch_size, self.z_dim)
 
                 # update autoencoder
