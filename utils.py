@@ -98,7 +98,7 @@ def load_docs(dataset_name, input_height):
         X[img_index] = img 
         img_index += 1
 
-    return X/255., y
+    return all_docs, y
 
 def load_batch(dataset_name, input_height, start_index, end_index):
     data_dir = "/Users/kartik/Documents/ami_invoices_448/"
