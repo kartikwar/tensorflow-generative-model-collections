@@ -162,7 +162,7 @@ class VAE(object):
 
         # loss
         marginal_likelihood = tf.reduce_sum(self.inputs * tf.log(self.out) + (1 - self.inputs) * tf.log(1 - self.out),
-                                            [1, 2])
+                                            [1, 2])/ 1000.0
         KL_divergence = 0.5 * tf.reduce_sum(tf.square(self.mu) + tf.square(sigma) - tf.log(1e-8 + tf.square(sigma)) - 1, [1])
 
         self.neg_loglikelihood = -tf.reduce_mean(marginal_likelihood)
