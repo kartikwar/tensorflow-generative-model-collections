@@ -122,8 +122,8 @@ class VAE(object):
 
             #series of deconvolutions to convert to height/2
             #height/2
-            net =  tf.nn.relu( bn(slim.repeat(net, deconv1_repitions, slim.deconv2d, 64, [3, 3], 
-                          trainable=is_training, scope='de_dc3', stride=(2,2)) is_training=is_training, scope='de_bn3'))
+            net =  tf.nn.relu( bn(slim.repeat(net, deconv1_repitions, slim.conv2d_transpose, 64, [3, 3], 
+                          trainable=is_training, scope='de_dc3', stride=(2,2)), is_training=is_training, scope='de_bn3'))
 
             # net = tf.nn.relu(
             #     bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, deconv1_strides[0], 
