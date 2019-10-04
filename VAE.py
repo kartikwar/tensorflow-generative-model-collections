@@ -69,13 +69,13 @@ class VAE(object):
             tf.add_to_collection("encoder_strides1", [2, 2])
 
             #series of convolutions
-            net = slim.repeat(net, 4, slim.conv2d, 128, [3, 3], 
+            net = slim.repeat(net, 3, slim.conv2d, 128, [4, 4], 
                           trainable=is_training, scope='en_conv2', stride=(2,2))
             # net = lrelu(bn(conv2d(net, 128, 4, 4, 2, 2, name='en_conv2'), is_training=is_training, scope='en_bn2'))
             net = lrelu(bn(net, is_training=is_training, scope='en_b2'))
             tf.add_to_collection("encoder_conv2", net)
             tf.add_to_collection("encoder_strides2", (2, 2))
-            tf.add_to_collection("conv2_repititions", 4)
+            tf.add_to_collection("conv2_repititions", 3)
             
             #input shape of net is [bs, curr_height, curr_width, 128], 
             # output shape of net is [bs, curr_height * curr_width *128]

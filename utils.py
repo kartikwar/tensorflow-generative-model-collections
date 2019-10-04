@@ -82,26 +82,19 @@ def get_ops(path):
 
 
 def load_docs(dataset_name, input_height):
-    data_dir = "/Users/kartik/Documents/ami_invoices_448/"
+    data_dir = "/home/developers/idp/ami_invoices_448"
 
-    X = np.zeros(shape=(7231, input_height, input_height, 3))
     y = np.zeros(shape=(7231,))
 
     img_index = 0
 
     all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
 
-    for img_name in all_docs[:64]:
-        print('img_name is ', img_name)
-        img = cv2.imread(os.path.join(data_dir, img_name))
-        img = cv2.resize(img, (input_height, input_height))
-        X[img_index] = img 
-        img_index += 1
 
     return all_docs, y
 
 def load_batch(dataset_name, input_height, start_index, end_index):
-    data_dir = "/Users/kartik/Documents/ami_invoices_448/"
+    data_dir = "/home/developers/idp/ami_invoices_448"
 
     X = np.zeros(shape=(64, input_height, input_height, 3))
     y = np.zeros(shape=(64,))
@@ -111,7 +104,7 @@ def load_batch(dataset_name, input_height, start_index, end_index):
     all_docs = [doc_img for doc_img in os.listdir(data_dir) if doc_img not in ['.DS_Store', 'checkpoint' , 'results', 'logs']]
 
     for img_name in all_docs[start_index:end_index]:
-        print('img_name is ', img_name)
+        #print('img_name is ', img_name)
         img = cv2.imread(os.path.join(data_dir, img_name))
         img = cv2.resize(img, (input_height, input_height))
         X[img_index] = img 
