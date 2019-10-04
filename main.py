@@ -112,7 +112,7 @@ def main():
         print(" [*] Training finished!")
 
         # visualize learned generator
-        gan.visualize_results()
+        #gan.visualize_results()
 
         print(" [*] Testing finished!")
 

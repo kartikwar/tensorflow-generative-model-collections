@@ -37,7 +37,8 @@ class VAE(object):
             self.c_dim = 1
 
             # train
-            self.learning_rate = 0.0002
+            #self.learning_rate = 0.0002
+            self.learning_rate = 0.00002
             self.beta1 = 0.5
 
             # test
@@ -233,7 +234,7 @@ class VAE(object):
         self.saver = tf.train.Saver()
 
         # summary writer
-        # self.writer = tf.summary.FileWriter(self.log_dir + '/' + self.model_name, self.sess.graph)
+        self.writer = tf.summary.FileWriter(self.log_dir + '/' + self.model_name, self.sess.graph)
 
         # restore check-point if it exits
         could_load, checkpoint_counter = self.load(self.checkpoint_dir)
@@ -261,7 +262,7 @@ class VAE(object):
                 # update autoencoder
                 _, summary_str, loss, nll_loss, kl_loss = self.sess.run([self.optim, self.merged_summary_op, self.loss, self.neg_loglikelihood, self.KL_divergence],
                                                feed_dict={self.inputs: batch_images, self.z: batch_z})
-                # self.writer.add_summary(summary_str, counter)
+                self.writer.add_summary(summary_str, counter)
 
                 # display training status
                 counter += 1
