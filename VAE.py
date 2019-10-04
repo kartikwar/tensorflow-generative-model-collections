@@ -67,10 +67,15 @@ class VAE(object):
             net = lrelu(conv2d(x, 64, 4, 4, 2, 2, name='en_conv1'))
             tf.add_to_collection("encoder_conv1", net)
             tf.add_to_collection("encoder_strides1", [2, 2])
-            #height/6
-            net = lrelu(bn(conv2d(net, 128, 4, 4, 3, 3, name='en_conv2'), is_training=is_training, scope='en_bn2'))
+
+            #series of convolutions
+            net = slim.repeat(net, 4, slim.conv2d, 128, [3, 3], 
+                          trainable=is_training, scope='en_b2', stride=(2,2))
+            net = lrelu(bn(net))
             tf.add_to_collection("encoder_conv2", net)
-            tf.add_to_collection("encoder_strides2", [3, 3])
+            tf.add_to_collection("encoder_strides2", (2, 2))
+            tf.add_to_collection("conv2_repititions", 4)
+            
             #input shape of net is [bs, curr_height, curr_width, 128], 
             # output shape of net is [bs, curr_height * curr_width *128]
             net = tf.reshape(net, [self.batch_size, -1])
@@ -99,10 +104,12 @@ class VAE(object):
             deconv1_shape = deconv1_shape.get_shape().as_list()
 
             deconv1_strides = tf.get_collection('encoder_strides2')[0]
-            deconv2_strides = tf.get_collection('encoder_strides1')[0]
+            deconv1_repitions = tf.get_collection('conv2_repititions')[0]
 
+            deconv2_strides = tf.get_collection('encoder_strides1')[0]
             deconv2_shape = tf.get_collection('encoder_conv1')[0]
             deconv2_shape = deconv2_shape.get_shape().as_list()
+            # deconv2_repitions = 
 
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
@@ -111,14 +118,23 @@ class VAE(object):
             net = tf.nn.relu(bn(linear(net, 128 * int(deconv1_shape[1]) * int(deconv1_shape[2]), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
             #height/6
             net = tf.reshape(net, [self.batch_size, int(deconv1_shape[1]), int(deconv1_shape[2]), 128])
+
+            #series of deconvolutions to convert to height/2
             #height/2
-            net = tf.nn.relu(
-                bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, deconv1_strides[0], 
-                deconv1_strides[1], name='de_dc3'), is_training=is_training,
-                   scope='de_bn3'))
+            net =  tf.nn.relu( bn(slim.repeat(net, deconv1_repitions, slim.deconv2d, 64, [3, 3], 
+                          trainable=is_training, scope='de_dc3', stride=(2,2)) is_training=is_training, scope='de_bn3'))
+
+            # net = tf.nn.relu(
+            #     bn(deconv2d(net, [self.batch_size, int(deconv2_shape[1]), int(deconv2_shape[2]), 64], 4, 4, deconv1_strides[0], 
+            #     deconv1_strides[1], name='de_dc3'), is_training=is_training,
+            #        scope='de_bn3'))
+            
             #height
             out = tf.nn.sigmoid(deconv2d(net, [self.batch_size, self.output_height, self.output_width, 1], 4, 4, 
             deconv2_strides[0], deconv2_strides[1], name='de_dc4'))
+
+            # out = slim.repeat
+
             return out
 
     def inference(self): 
