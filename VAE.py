@@ -71,7 +71,11 @@ class VAE(object):
             net = lrelu(bn(conv2d(net, 128, 4, 4, 3, 3, name='en_conv2'), is_training=is_training, scope='en_bn2'))
             tf.add_to_collection("encoder_conv2", net)
             tf.add_to_collection("encoder_strides2", [3, 3])
+            #input shape of net is [bs, curr_height, curr_width, 128], 
+            # output shape of net is [bs, curr_height * curr_width *128]
             net = tf.reshape(net, [self.batch_size, -1])
+            #need to optimize this for larger images, taking to much space
+            # input shape of net is  [bs, curr_height * curr_width *128]
             net = lrelu(bn(linear(net, 1024, scope='en_fc3'), is_training=is_training, scope='en_bn3'))
             net_before_gauss = tf.print('shape of net is ', tf.shape(net))
             
@@ -102,6 +106,8 @@ class VAE(object):
 
 
             net = tf.nn.relu(bn(linear(z, 1024, scope='de_fc1'), is_training=is_training, scope='de_bn1'))
+
+            #need to optimize this taking too much space
             net = tf.nn.relu(bn(linear(net, 128 * int(deconv1_shape[1]) * int(deconv1_shape[2]), scope='de_fc2'), is_training=is_training, scope='de_bn2'))
             #height/6
             net = tf.reshape(net, [self.batch_size, int(deconv1_shape[1]), int(deconv1_shape[2]), 128])
