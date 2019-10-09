@@ -2,3 +2,5 @@ checkpoint/
 results/
 *.jpg
 *.pyc
+*.json
+*logs/
